@@ -101,6 +101,14 @@ export function PrimaryGeneratedColumn(
         // explicitly set a primary and generated to column options
         options.primary = true
 
+        // extract generator function from options if provided (only UUID options have this)
+        const generator =
+            strategy === "uuid" &&
+            "generator" in options &&
+            typeof options.generator === "function"
+                ? options.generator
+                : undefined
+
         // register column metadata args
         getMetadataArgsStorage().columns.push({
             target: object.constructor,
@@ -114,6 +122,7 @@ export function PrimaryGeneratedColumn(
             target: object.constructor,
             propertyName: propertyName,
             strategy: strategy,
+            generator: generator,
         } as GeneratedMetadataArgs)
     }
 }

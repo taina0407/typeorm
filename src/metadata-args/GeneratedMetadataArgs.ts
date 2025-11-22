@@ -16,4 +16,9 @@ export interface GeneratedMetadataArgs {
      * Generation strategy.
      */
     readonly strategy: "uuid" | "increment" | "rowid"
+
+    /**
+     * Custom generator function for generating column values.
+     */
+    readonly generator?: () => unknown
 }

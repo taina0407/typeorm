@@ -113,6 +113,12 @@ export class ColumnMetadata {
     generationStrategy?: "uuid" | "increment" | "rowid"
 
     /**
+     * Custom generator function for generating column values.
+     * Only applicable when this column is generated.
+     */
+    generator?: () => unknown
+
+    /**
      * Identity column type. Supports only in Postgres 10+.
      */
     generatedIdentity?: "ALWAYS" | "BY DEFAULT"

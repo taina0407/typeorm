@@ -417,6 +417,7 @@ export class EntityMetadataBuilder {
                 if (generated) {
                     column.isGenerated = true
                     column.generationStrategy = generated.strategy
+                    column.generator = generated.generator
                     if (generated.strategy === "uuid") {
                         column.type = "uuid"
                     } else if (generated.strategy === "rowid") {

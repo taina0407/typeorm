@@ -1400,23 +1400,34 @@ export class InsertQueryBuilder<
             // } else if (column.isCreateDate || column.isUpdateDate) {
             //     return "CURRENT_TIMESTAMP";
 
-            // if column is generated uuid and database does not support its generation and custom generated value was not provided by a user - we generate a new uuid value for insertion
+            // if column is generated uuid and value was not provided by user, generate a new uuid value
         } else if (
             column.isGenerated &&
             column.generationStrategy === "uuid" &&
-            !this.connection.driver.isUUIDGenerationSupported() &&
-            value === undefined
+            (value === undefined || value === null)
         ) {
-            value = uuidv4()
-            expression += this.createParameter(value)
-
-            if (!(valueSetIndex in this.expressionMap.locallyGenerated)) {
-                this.expressionMap.locallyGenerated[valueSetIndex] = {}
+            // use custom generator if provided, otherwise fallback to uuidv4 if database doesn't support UUID generation
+            if (column.generator) {
+                value = column.generator()
+            } else if (!this.connection.driver.isUUIDGenerationSupported()) {
+                value = uuidv4()
             }
-            column.setEntityValue(
-                this.expressionMap.locallyGenerated[valueSetIndex],
-                value,
-            )
+
+            // only create parameter and store value if we actually generated something
+            if (value !== undefined && value !== null) {
+                expression += this.createParameter(value)
+
+                if (!(valueSetIndex in this.expressionMap.locallyGenerated)) {
+                    this.expressionMap.locallyGenerated[valueSetIndex] = {}
+                }
+                column.setEntityValue(
+                    this.expressionMap.locallyGenerated[valueSetIndex],
+                    value,
+                )
+            } else {
+                // if we didn't generate a value, use DEFAULT (database will handle it)
+                expression += "DEFAULT"
+            }
 
             // if value for this column was not provided then insert default value
         } else if (value === undefined) {
